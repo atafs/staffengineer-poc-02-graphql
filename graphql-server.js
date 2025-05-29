@@ -13,6 +13,7 @@ const typeDefs = gql`
   type Mutation {
     incrementCounter: Int!
     decrementCounter: Int!
+    setCounter(value: Int!): Int!
   }
 `;
 
@@ -29,6 +30,11 @@ const resolvers = {
     },
     decrementCounter: () => {
       counter--;
+      saveCounter();
+      return counter;
+    },
+    setCounter: (_, { value }) => {
+      counter = value;
       saveCounter();
       return counter;
     },
@@ -57,7 +63,14 @@ function loadCounter() {
 loadCounter();
 
 // Create Apollo Server
-const server = new ApolloServer({ typeDefs, resolvers });
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+  cors: {
+    origin: ["http://localhost:3000", "https://studio.apollographql.com"], // Allow React, GraphiQL, and Apollo Studio
+    credentials: true, // Required for Apollo Studio with authentication
+  },
+});
 
 // Start the server
 server.listen({ port: 4000 }).then(({ url }) => {
